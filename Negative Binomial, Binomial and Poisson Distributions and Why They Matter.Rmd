@@ -1,0 +1,182 @@
+---
+title: "Negative Binomial, Binomial and Poisson Distributions and Why They Matter"
+author: "Ojan Khosravifar"
+date: "04/02/2021"
+output: html_document
+---
+
+### Bernoulli Trials and Geometric Distributions
+
+A Bernoulli trial is simply a random, independent event with two possible outcomes: success or failure, detection or lack-thereof, whatever it may be. Using this concept of dichotomous outcomes we can model the probability that a single successful outcome __*r*__ will occur after __*k*__ trials. This is a type of geometric distribution called a probability distribution function (PDF). 
+
+Using the example of a coin toss as the Bernoulli trial, a geometric PDF can tell us the probability of getting exactly one heads (__*r*__ = 1) after any number of trials (__*k*__ = 1,2,3 ... n). Intuitively we know that the probability of this on successive trials drops. For instance, on the tenth trial (__*k*__ = 10) the probability of finally getting a heads is 0.09766%.
+
+```{r echo=F}
+p <- 0.5 #probability of 50%
+k <- 1:10 #10 trials
+r <- 1 #one success
+nb.pdf <- dnbinom(k-r,r,p) #(1-p)^(k-1)*p
+plot(k, nb.pdf, main="Geometric PDF Distribution of 1 Heads", ylab="Probability", xlab="Number of Coin Tosses", ylim=c(0,1), xlim=c(1,10.5), pch=16)
+axis(2, seq(0,1,0.1)) #adjusting y axis(2) ticks
+axis(1, seq(1,10,1)) #adjusting X axis(1) ticks
+text(nb.pdf~k, pos=4, offset=.25, cex=.6, label=round(nb.pdf,4)) #probability labels for each trial
+points(10, nb.pdf[10], col="red", pch=16) #highlighting 10
+```
+```{r}
+nb.pdf[10] #probability of getting exactly 1 heads after 10 tosses
+```
+
+The second type of geometric function, called the cumulative density function (CDF), is related to the PDF. Using a geometric CDF we can model the probability that an outcome will occur at any point during __*k*__ trials. For example, the CDF tells us the probability of getting at least a single heads (__*r*__ = 1) at any point during 10 trials (__*k*__ = 10) is 99.90234%. The probability of this on the CDF is the aggregate probability of the PDF from 1-10, hence the name *cumulative* density function.
+
+```{r echo=F}
+nb.cdf <- pnbinom(k-r,r,p) #(1-(1-p)^(k))
+plot(k, nb.cdf, main="Geometric CDF Distribution of 1 Heads", ylab="Probability", xlab="Number of Coin Tosses", ylim=c(0,1), xlim=c(1,10.5), pch=16)
+axis(2, seq(0,1,0.1)) #adjusting y axis(2) ticks
+axis(1, seq(1,10,1)) #adjusting X axis(1) ticks
+text(nb.cdf~k, pos=4, offset=.25, cex=.6, label=round(nb.cdf,4)) #probability labels for each trial
+points(10, nb.cdf[10], col="red", pch=16) #highlighting 10
+```
+```{r}
+nb.cdf[10] #probability of getting at least 1 heads after 10 tosses
+sum(nb.pdf[1:10]) #probability of getting at least 1 heads after 10 tosses using aggregate probability from the PDF
+```
+
+To summarize, geometric distribution PDFs and CDFs model the single or cumulative probability an outcome of a Bernoulli trial will occur.
+
+### Negative Binomial Distributions
+
+A negative binomial distribution models the number of Bernoulli trials needed to get the __*r*__ th success. Thus far we have been looking at PDFs and CDFs where __*r*__ = 1. So the geometric distribution is actually a specific type of negative binomial. 
+
+Using a coin toss as an example, a negative binomial PDF tells us the probability of getting exactly 5 tails after 10 coin tosses is 12.30469%.
+
+```{r echo=F}
+p <- 0.5 #probability of 50%
+k <- 1:20 #20 trials
+r <- 5 #5 success
+nb.pdf <- dnbinom(k-r,r,p) #(choose(k-1,r-1)*(p^r)*(1-p)^(k-r))
+plot(k, nb.pdf, main="Negative Binomial Distribution PDF of 5 Tails", ylab="Probability", xlab="Number of Coin Tosses", ylim=c(0,.25), xlim=c(1,20.5), pch=16, col.axis="white")
+axis(2, seq(0,.25,0.05)) #adjusting y axis(2) ticks
+axis(1, seq(1,20,1), cex.axis=.8) #adjusting X axis(1) ticks
+text(nb.pdf~k, pos=4, offset=.25, cex=.6, label=round(nb.pdf,4)) #probability labels for each trial
+points(10, nb.pdf[10], col="red", pch=16) #highlighting 10
+```
+```{r}
+nb.pdf[10] #probability of getting exactly 5 tails after 10 tosses
+```
+
+Using the CDF, the negative binomial distribution tells us the probability of getting at least 5 tails during 10 coin tosses is 62.30469%.
+
+```{r echo=F}
+nb.cdf <- pnbinom(k-r,r,p) #I don't like beta functions
+plot(k, nb.cdf, main="Negative Binomial Distribution CDF of 5 Tails", ylab="Probability", xlab="Number of Coin Tosses", ylim=c(0,1), xlim=c(1,20.5), pch=16, col.axis="white")
+axis(2, seq(0,1,0.1)) #adjusting y axis(2) ticks
+axis(1, seq(1,20,1), cex.axis=.8) #adjusting X axis(1) ticks
+text(nb.cdf~k, pos=4, offset=.25, cex=.6, label=round(nb.cdf,4)) #probability labels for each trial
+points(10, nb.cdf[10], col="red", pch=16) #highlighting 10
+```
+```{r}
+nb.cdf[10] #probability of getting at least 5 tails after 10 tosses
+```
+
+## Binomial vs Negative Binomial Distributions
+
+A common source of confusion is the difference between a binomial and negative binomial distribution. A binomial distribution models the number of successes __*r*__ in a fixed number of Bernoulli trials __*k*__. So it has similar components to the negative binomial but different uses. 
+
+Using a coin toss as an example, a binomial distribution PDF tells us the probability of getting exactly 10 tails or 5 tails from 20 coin tosses is 17.61971% and 1.478577%, respectively. Notice that the probability is focused on the number successes __*r*__ for a fixed number of trials, in this case __*k*__ = 20. Conversely, the negative binomial focuses on the probability of getting a fixed number of successes after __*k*__ trials. This is why it is a *negative* binomial.
+
+```{r echo=F}
+p <- 0.5 #probability of 50%
+k <- 1:20 #number of successes
+r <- 20 #20 trials
+b.pdf <- dbinom(k,r,p) #(choose(k,r))*(p^r)*(1-p)^(k-r)
+plot(k, b.pdf, main="Binomial Distribution PDF of 20 Coin Tosses", ylab="Probability", xlab="Number of Coin Tosses", ylim=c(0,.25), xlim=c(1,20.5), pch=16, col.axis="white")
+axis(2, seq(0,.25,0.05)) #adjusting y axis(2) ticks
+axis(1, seq(1,20,1), cex.axis=.8) #adjusting X axis(1) ticks
+text(b.pdf~k, pos=4, offset=.25, cex=.6, label=round(b.pdf,4)) #probability labels for each trial
+points(10, b.pdf[10], col="red", pch=16) #highlighting 10
+points(5, b.pdf[5], col="red", pch=16) #highlighting 5
+```
+```{r}
+b.pdf[10] #probability of getting exactly 10 tails from 20 tosses
+b.pdf[5] #probability of getting exactly 5 tails from 20 tosses
+```
+
+Using the CDF, the binomial distribution tells us the probability of getting at least 10 tails from 20 coin tosses is 58.80985%. 
+
+```{r echo=F}
+b.cdf <- pbinom(k,r,p) #I don't like beta functions
+plot(k, b.cdf, main="Binomial Distribution CDF of 20 Coin Tosses", ylab="Probability", xlab="Number of Coin Tosses", ylim=c(0,1), xlim=c(1,20.5), pch=16, col.axis="white")
+axis(2, seq(0,1,0.1)) #adjusting y axis(2) ticks
+axis(1, seq(1,20,1), cex.axis=.8) #adjusting X axis(1) ticks
+text(b.cdf~k, pos=4, offset=.25, cex=.6, label=round(b.cdf,4)) #probability labels for each trial
+points(10, b.cdf[10], col="red", pch=16) #highlighting 10
+```
+```{r}
+b.cdf[10] #probability of getting at least 10 tails from 20 tosses
+```
+
+## Poisson Distributions
+
+A Poisson distribution is related to the negative binomial and binomial distributions. It models the probability we will observe a number of events occurring over a fixed period of time __*q*__, given __*λ*__, which is the average number of events over the same interval. 
+
+That is a rather abstract definition. To simplify, suppose we are flipping a coin on average 2 times a minute. Intuitively, we know that the probability at 2 is highest and tapers off at either side. A Poisson PDF tells us the probability we will observe exactly 5 coin tosses in a minute is 3.608941%. 
+
+```{r echo=F}
+q <- 0:10 #number of occurrences
+lambda <- 2 #expected rate of occurrences
+p.pdf <- dpois(q,lambda)
+plot(q, p.pdf, main="Poisson Distribution PDF of a Coin Toss", ylab="Probability", xlab="Number of Coin Tosses", ylim=c(0,0.5), xlim=c(0,10.5), pch=16, col.axis="white")
+axis(2, seq(0,0.5,0.1)) #adjusting y axis(2) ticks
+axis(1, seq(0,10,1), cex.axis=.8) #adjusting X axis(1) ticks
+text(p.pdf~q, pos=4, offset=.25, cex=.6, label=round(p.pdf,4))
+points(5, p.pdf[6], col="red", pch=16) #highlighting 5
+```
+```{r}
+p.pdf[6] #probability of observing exactly 5 coin tosses
+```
+
+The Poisson PDF can also model the probability of observing different outcomes of an event using the probability of that outcome __*λ<sub>2</sub>*__ = __*λ<sub>1</sub>*__ * __*p*__. 
+
+It tells us that the probability we will observe exactly 5 tails in a minute (__*λ<sub>2</sub>*__ = 2 * 0.5) is 0.3065662%. 
+
+```{r echo=F}
+q <- 0:10 #number of occurrences
+lambda <- 2*0.5 #expected rate of occurrences
+p.pdf <- dpois(q,lambda)
+plot(q, p.pdf, main="Poisson Distribution PDF of 5 Tails", ylab="Probability", xlab="Number of Coin Tosses", ylim=c(0,0.5), xlim=c(0,10.5), pch=16, col.axis="white")
+axis(2, seq(0,0.5,0.1)) #adjusting y axis(2) ticks
+axis(1, seq(0,10,1), cex.axis=.8) #adjusting X axis(1) ticks
+text(p.pdf~q, pos=4, offset=.25, cex=.6, label=round(p.pdf,4))
+points(5, p.pdf[6], col="red", pch=16) #highlighting 5
+```
+```{r}
+p.pdf[6] #probability of observing exactly 5 tails
+```
+
+Using the CDF, the Poisson distribution tells us the probability of observing up to 5 tails in a minute is 99.94058%.
+
+```{r echo=F}
+p.cdf <- ppois(q,lambda)
+plot(q, p.cdf, main="Poisson Distribution CDF of a Coin Toss", ylab="Probability", xlab="Number of Coin Tosses", ylim=c(0,1), xlim=c(0,10.5), pch=16, col.axis="white")
+axis(2, seq(0,1,0.1)) #adjusting y axis(2) ticks
+axis(1, seq(0,10,1), cex.axis=.8) #adjusting X axis(1) ticks
+text(p.cdf~q, pos=4, offset=.25, cex=.6, label=round(p.cdf,4))
+points(5, p.cdf[6], col="red", pch=16) #highlighting 5
+```
+```{r}
+p.cdf[6] #probability of observing up to 5 tails
+```
+
+Alongside time, the Poisson distribution is also valid across distance and space (volume). It gives us a different perspective of random sampling compared to the negative binomial and binomial distributions. Rather than modeling the relationship between trials versus successes (or vice versa) it models trials or successes over the interval that they're distributed across (time, distance and space).
+
+## Conclusion
+
+So how do these three types of distributions come together? Well, they can help us understand the dynamics of population random sampling *beyond coin tosses*! They can be extremely valuable in the context of 'omics which relies heavily on random sampling of RNA, proteins, single-cells etc.
+
+#### Recap:
+
+The negative binomial distribution can tell us the probability a specific number of outcomes will occur across a variable number of trials.
+
+The binomial distribution can tell us the probability a variable number of outcomes will occur across a specific number of trials.
+
+Finally, the Poisson distribution can tell us the probability we will observe different numbers of an event or outcome.
