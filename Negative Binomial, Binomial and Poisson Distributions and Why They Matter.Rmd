@@ -1,7 +1,6 @@
 ---
 title: "Negative Binomial, Binomial and Poisson Distributions and Why They Matter"
 author: "Ojan Khosravifar"
-date: "04/02/2021"
 output: html_document
 ---
 
